@@ -1,6 +1,7 @@
 package server6
 
 import (
+	"context"
 	"log"
 	"net"
 	"testing"
@@ -71,6 +72,6 @@ func TestServer(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEqual(t, 0, len(ifaces))
 
-	_, _, err = c.Solicit(dhcpv6.WithRapidCommit)
+	_, _, err = c.Solicit(context.Background(), dhcpv6.WithRapidCommit)
 	require.NoError(t, err)
 }

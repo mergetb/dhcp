@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build go1.12
+
 package nclient6
 
 import (
@@ -169,7 +171,7 @@ func TestSendAndReadUntil(t *testing.T) {
 				withBufferCap(0))
 			defer mc.Close()
 
-			rcvd, err := mc.SendAndRead(AllDHCPServers, tt.send, nil)
+			rcvd, err := mc.SendAndRead(context.Background(), AllDHCPServers, tt.send, nil)
 			if err != tt.wantErr {
 				t.Error(err)
 			}
@@ -198,7 +200,7 @@ func TestSimpleSendAndReadDiscardGarbage(t *testing.T) {
 	// Too short for valid DHCPv4 packet.
 	udpConn.WriteTo([]byte{0x01}, nil)
 
-	rcvd, err := mc.SendAndRead(AllDHCPServers, pkt, nil)
+	rcvd, err := mc.SendAndRead(context.Background(), AllDHCPServers, pkt, nil)
 	if err != nil {
 		t.Error(err)
 	}
@@ -243,7 +245,7 @@ func TestMultipleSendAndReadOne(t *testing.T) {
 		defer mc.conn.Close()
 
 		for i, send := range tt.send {
-			rcvd, err := mc.SendAndRead(AllDHCPServers, send, nil)
+			rcvd, err := mc.SendAndRead(context.Background(), AllDHCPServers, send, nil)
 
 			if wantErr := tt.wantErr[i]; err != wantErr {
 				t.Errorf("SendAndReadOne(%v): got %v, want %v", send, err, wantErr)

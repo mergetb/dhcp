@@ -232,12 +232,12 @@ func IsMessageType(t dhcpv6.MessageType) Matcher {
 
 // Solicit sends a solicitation message and returns the first valid
 // advertisement received.
-func (c *Client) Solicit(modifiers ...dhcpv6.Modifier) (*dhcpv6.Message, net.Addr, error) {
+func (c *Client) Solicit(ctx context.Context, modifiers ...dhcpv6.Modifier) (*dhcpv6.Message, net.Addr, error) {
 	solicit, err := dhcpv6.NewSolicit(c.ifaceHWAddr, modifiers...)
 	if err != nil {
 		return nil, nil, err
 	}
-	msg, err := c.SendAndRead(AllDHCPServers, solicit, IsMessageType(dhcpv6.MessageTypeAdvertise))
+	msg, err := c.SendAndRead(ctx, AllDHCPServers, solicit, IsMessageType(dhcpv6.MessageTypeAdvertise))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -247,12 +247,12 @@ func (c *Client) Solicit(modifiers ...dhcpv6.Modifier) (*dhcpv6.Message, net.Add
 // Request requests an IP Assignment from peer given an advertise message.
 //
 // If peer is nil, AllDHCPServers is used.
-func (c *Client) Request(advertise *dhcpv6.Message, modifiers ...dhcpv6.Modifier) (*dhcpv6.Message, error) {
+func (c *Client) Request(ctx context.Context, advertise *dhcpv6.Message, modifiers ...dhcpv6.Modifier) (*dhcpv6.Message, error) {
 	request, err := dhcpv6.NewRequestFromAdvertise(advertise, modifiers...)
 	if err != nil {
 		return nil, err
 	}
-	return c.SendAndRead(AllDHCPServers, request, nil)
+	return c.SendAndRead(ctx, AllDHCPServers, request, nil)
 }
 
 // send sends p to destination and returns a response channel.
@@ -277,9 +277,9 @@ func (c *Client) send(dest net.Addr, msg *dhcpv6.Message) (<-chan *dhcpv6.Messag
 		// Why can't we just close ch here?
 		//
 		// Because receiveLoop may potentially be blocked trying to
-		// send on ch. We gotta unblock it first, and then we can take
-		// the lock and remove the XID from the pending transaction
-		// map.
+		// send on ch. We gotta unblock it first, so it'll unlock the
+		// lock, and then we can take the lock and remove the XID from
+		// the pending transaction map.
 		close(done)
 
 		c.pendingMu.Lock()
@@ -297,11 +297,14 @@ func (c *Client) send(dest net.Addr, msg *dhcpv6.Message) (<-chan *dhcpv6.Messag
 	return ch, cancel, nil
 }
 
+// This should never be visible to a user.
+var errDeadlineExceeded = errors.New("INTERNAL ERROR: deadline exceeded")
+
 // SendAndRead sends a packet p to a destination dest and waits for the first
 // response matching `match` as well as its Transaction ID.
 //
 // If match is nil, the first packet matching the Transaction ID is returned.
-func (c *Client) SendAndRead(dest *net.UDPAddr, msg *dhcpv6.Message, match Matcher) (*dhcpv6.Message, error) {
+func (c *Client) SendAndRead(ctx context.Context, dest *net.UDPAddr, msg *dhcpv6.Message, match Matcher) (*dhcpv6.Message, error) {
 	var response *dhcpv6.Message
 	err := c.retryFn(func(timeout time.Duration) error {
 		ch, rem, err := c.send(dest, msg)
@@ -310,13 +313,13 @@ func (c *Client) SendAndRead(dest *net.UDPAddr, msg *dhcpv6.Message, match Match
 		}
 		defer rem()
 
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
-
 		for {
 			select {
 			case <-c.done:
 				return ErrNoResponse
+
+			case <-time.After(timeout):
+				return errDeadlineExceeded
 
 			case <-ctx.Done():
 				return ctx.Err()
@@ -329,7 +332,7 @@ func (c *Client) SendAndRead(dest *net.UDPAddr, msg *dhcpv6.Message, match Match
 			}
 		}
 	})
-	if err == context.DeadlineExceeded {
+	if err == errDeadlineExceeded {
 		return nil, ErrNoResponse
 	}
 	if err != nil {
@@ -357,5 +360,5 @@ func (c *Client) retryFn(fn func(timeout time.Duration) error) error {
 		}
 	}
 
-	return context.DeadlineExceeded
+	return errDeadlineExceeded
 }
