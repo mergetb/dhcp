@@ -253,7 +253,7 @@ func IsMessageType(t dhcpv4.MessageType) Matcher {
 
 // DiscoverOffer sends a DHCPDiscover message and returns the first valid offer
 // received.
-func (c *Client) DiscoverOffer(modifiers ...dhcpv4.Modifier) (*dhcpv4.DHCPv4, error) {
+func (c *Client) DiscoverOffer(ctx context.Context, modifiers ...dhcpv4.Modifier) (*dhcpv4.DHCPv4, error) {
 	// RFC 2131, Section 4.4.1, Table 5 details what a DISCOVER packet should
 	// contain.
 	discover, err := dhcpv4.NewDiscovery(c.ifaceHWAddr, dhcpv4.PrependModifiers(modifiers,
@@ -261,14 +261,14 @@ func (c *Client) DiscoverOffer(modifiers ...dhcpv4.Modifier) (*dhcpv4.DHCPv4, er
 	if err != nil {
 		return nil, err
 	}
-	return c.SendAndRead(c.serverAddr, discover, IsMessageType(dhcpv4.MessageTypeOffer))
+	return c.SendAndRead(ctx, c.serverAddr, discover, IsMessageType(dhcpv4.MessageTypeOffer))
 }
 
 // Request completes the 4-way Discover-Offer-Request-Ack handshake.
 //
 // Note that modifiers will be applied *both* to Discover and Request packets.
-func (c *Client) Request(modifiers ...dhcpv4.Modifier) (offer, ack *dhcpv4.DHCPv4, err error) {
-	offer, err = c.DiscoverOffer(modifiers...)
+func (c *Client) Request(ctx context.Context, modifiers ...dhcpv4.Modifier) (offer, ack *dhcpv4.DHCPv4, err error) {
+	offer, err = c.DiscoverOffer(ctx, modifiers...)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -279,7 +279,7 @@ func (c *Client) Request(modifiers ...dhcpv4.Modifier) (offer, ack *dhcpv4.DHCPv
 	if err != nil {
 		return nil, nil, err
 	}
-	ack, err = c.SendAndRead(c.serverAddr, req, nil)
+	ack, err = c.SendAndRead(ctx, c.serverAddr, req, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -328,12 +328,15 @@ func (c *Client) send(dest *net.UDPAddr, msg *dhcpv4.DHCPv4) (resp <-chan *dhcpv
 	return ch, cancel, nil
 }
 
+// This error should never be visible to users.
+var errDeadlineExceeded = errors.New("INTERNAL ERROR: deadline exceeded")
+
 // SendAndRead sends a packet p to a destination dest and waits for the first
 // response matching `match` as well as its Transaction ID and ClientHWAddr.
 //
 // If match is nil, the first packet matching the Transaction ID and
 // ClientHWAddr is returned.
-func (c *Client) SendAndRead(dest *net.UDPAddr, p *dhcpv4.DHCPv4, match Matcher) (*dhcpv4.DHCPv4, error) {
+func (c *Client) SendAndRead(ctx context.Context, dest *net.UDPAddr, p *dhcpv4.DHCPv4, match Matcher) (*dhcpv4.DHCPv4, error) {
 	var response *dhcpv4.DHCPv4
 	err := c.retryFn(func(timeout time.Duration) error {
 		ch, rem, err := c.send(dest, p)
@@ -342,13 +345,13 @@ func (c *Client) SendAndRead(dest *net.UDPAddr, p *dhcpv4.DHCPv4, match Matcher)
 		}
 		defer rem()
 
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
-
 		for {
 			select {
 			case <-c.done:
 				return ErrNoResponse
+
+			case <-time.After(timeout):
+				return errDeadlineExceeded
 
 			case <-ctx.Done():
 				return ctx.Err()
@@ -361,7 +364,7 @@ func (c *Client) SendAndRead(dest *net.UDPAddr, p *dhcpv4.DHCPv4, match Matcher)
 			}
 		}
 	})
-	if err == context.DeadlineExceeded {
+	if err == errDeadlineExceeded {
 		return nil, ErrNoResponse
 	}
 	if err != nil {
@@ -380,7 +383,7 @@ func (c *Client) retryFn(fn func(timeout time.Duration) error) error {
 			// Got it!
 			return nil
 
-		case context.DeadlineExceeded:
+		case errDeadlineExceeded:
 			// Double timeout, then retry.
 			timeout *= 2
 
@@ -389,5 +392,5 @@ func (c *Client) retryFn(fn func(timeout time.Duration) error) error {
 		}
 	}
 
-	return context.DeadlineExceeded
+	return errDeadlineExceeded
 }

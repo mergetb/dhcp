@@ -3,6 +3,7 @@
 package server4
 
 import (
+	"context"
 	"log"
 	"math/rand"
 	"net"
@@ -111,7 +112,7 @@ func TestServer(t *testing.T) {
 		dhcpv4.WithHwAddr(ifaces[0].HardwareAddr),
 	}
 
-	offer, ack, err := c.Request(modifiers...)
+	offer, ack, err := c.Request(context.Background(), modifiers...)
 	require.NoError(t, err)
 	require.NotNil(t, offer, ack)
 	for _, p := range []*dhcpv4.DHCPv4{offer, ack} {

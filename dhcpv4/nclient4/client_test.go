@@ -185,7 +185,7 @@ func TestSendAndRead(t *testing.T) {
 				withBufferCap(0))
 			defer mc.Close()
 
-			rcvd, err := mc.SendAndRead(DefaultServers, tt.send, nil)
+			rcvd, err := mc.SendAndRead(context.Background(), DefaultServers, tt.send, nil)
 			if err != tt.wantErr {
 				t.Error(err)
 			}
@@ -215,7 +215,7 @@ func TestParallelSendAndRead(t *testing.T) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		if _, err := mc.SendAndRead(DefaultServers, pkt, nil); err != ErrNoResponse {
+		if _, err := mc.SendAndRead(context.Background(), DefaultServers, pkt, nil); err != ErrNoResponse {
 			t.Errorf("SendAndRead(%v) = %v, want %v", pkt, err, ErrNoResponse)
 		}
 	}()
@@ -244,11 +244,11 @@ func TestReuseXID(t *testing.T) {
 	mc, _ := serveAndClient(ctx, [][]*dhcpv4.DHCPv4{})
 	defer mc.Close()
 
-	if _, err := mc.SendAndRead(DefaultServers, pkt, nil); err != ErrNoResponse {
+	if _, err := mc.SendAndRead(context.Background(), DefaultServers, pkt, nil); err != ErrNoResponse {
 		t.Errorf("SendAndRead(%v) = %v, want %v", pkt, err, ErrNoResponse)
 	}
 
-	if _, err := mc.SendAndRead(DefaultServers, pkt, nil); err != ErrNoResponse {
+	if _, err := mc.SendAndRead(context.Background(), DefaultServers, pkt, nil); err != ErrNoResponse {
 		t.Errorf("SendAndRead(%v) = %v, want %v", pkt, err, ErrNoResponse)
 	}
 }
@@ -268,7 +268,7 @@ func TestSimpleSendAndReadDiscardGarbage(t *testing.T) {
 	// Too short for valid DHCPv4 packet.
 	udpConn.WriteTo([]byte{0x01}, nil)
 
-	rcvd, err := mc.SendAndRead(DefaultServers, pkt, nil)
+	rcvd, err := mc.SendAndRead(ctx, DefaultServers, pkt, nil)
 	if err != nil {
 		t.Errorf("SendAndRead(%v) = %v, want nil", pkt, err)
 	}
@@ -313,7 +313,9 @@ func TestMultipleSendAndRead(t *testing.T) {
 		defer mc.Close()
 
 		for i, send := range tt.send {
-			rcvd, err := mc.SendAndRead(DefaultServers, send, nil)
+			ctx, cancel = context.WithTimeout(context.Background(), 2*time.Second)
+			defer cancel()
+			rcvd, err := mc.SendAndRead(ctx, DefaultServers, send, nil)
 
 			if wantErr := tt.wantErr[i]; err != wantErr {
 				t.Errorf("SendAndReadOne(%v): got %v, want %v", send, err, wantErr)
