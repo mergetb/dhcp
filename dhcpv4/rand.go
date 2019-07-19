@@ -69,7 +69,7 @@ func (cr ctxReader) Read(b []byte) (int, error) {
 func DefaultReaderWithContext(ctx context.Context) ContextReader {
 	return ctxReader{
 		ctx:           ctx,
-		contextReader: ContextReader,
+		contextReader: &ContextReader{},
 	}
 }
 
