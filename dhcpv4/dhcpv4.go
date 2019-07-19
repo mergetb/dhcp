@@ -121,7 +121,7 @@ func GenerateTransactionID() (TransactionID, error) {
 	var xid TransactionID
 	ctx, cancel := context.WithTimeout(context.Background(), RandomTimeout)
 	defer cancel()
-	urand := &UrandomReader{}
+	urand := &UDevReader{}
 	n, err := urand.ReadContext(ctx, xid[:])
 	if err != nil {
 		return xid, fmt.Errorf("could not get random number: %v", err)
