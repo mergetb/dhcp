@@ -12,7 +12,7 @@ import (
 	"net"
 	"os"
 
-	"github.com/insomniacslk/dhcp/dhcpv4"
+	"github.com/mergetb/dhcp/dhcpv4"
 	"github.com/mdlayher/ethernet"
 	"github.com/mdlayher/raw"
 	"github.com/u-root/u-root/pkg/uio"

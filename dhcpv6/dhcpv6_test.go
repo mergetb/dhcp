@@ -6,7 +6,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/insomniacslk/dhcp/iana"
+	"github.com/mergetb/dhcp/iana"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"github.com/u-root/u-root/pkg/rand"

@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/insomniacslk/dhcp/dhcpv4"
-	"github.com/insomniacslk/dhcp/dhcpv4/client4"
+	"github.com/mergetb/dhcp/dhcpv4"
+	"github.com/mergetb/dhcp/dhcpv4/client4"
 	"github.com/stretchr/testify/require"
 )
 

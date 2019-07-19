@@ -1,8 +1,8 @@
 # dhcp
-[![Build Status](https://travis-ci.org/insomniacslk/dhcp.svg?branch=master)](https://travis-ci.org/insomniacslk/dhcp)
-[![GoDoc](https://godoc.org/github.com/insomniacslk/dhcp?status.svg)](https://godoc.org/github.com/insomniacslk/dhcp)
-[![codecov](https://codecov.io/gh/insomniacslk/dhcp/branch/master/graph/badge.svg)](https://codecov.io/gh/insomniacslk/dhcp)
-[![Go Report Card](https://goreportcard.com/badge/github.com/insomniacslk/dhcp)](https://goreportcard.com/report/github.com/insomniacslk/dhcp)
+[![Build Status](https://travis-ci.org/mergetb/dhcp.svg?branch=master)](https://travis-ci.org/mergetb/dhcp)
+[![GoDoc](https://godoc.org/github.com/mergetb/dhcp?status.svg)](https://godoc.org/github.com/mergetb/dhcp)
+[![codecov](https://codecov.io/gh/mergetb/dhcp/branch/master/graph/badge.svg)](https://codecov.io/gh/mergetb/dhcp)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mergetb/dhcp)](https://goreportcard.com/report/github.com/mergetb/dhcp)
 
 DHCPv4 and DHCPv6 decoding/encoding library with client and server code, written in Go.
 
@@ -23,7 +23,7 @@ pulled in automatically if necessary.
 
 So, to get `dhcpv6` and `dhpv4` just run:
 ```
-go get -u github.com/insomniacslk/dhcp/dhcpv{4,6}
+go get -u github.com/mergetb/dhcp/dhcpv{4,6}
 ```
 
 

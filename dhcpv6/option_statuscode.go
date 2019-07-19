@@ -3,7 +3,7 @@ package dhcpv6
 import (
 	"fmt"
 
-	"github.com/insomniacslk/dhcp/iana"
+	"github.com/mergetb/dhcp/iana"
 	"github.com/u-root/u-root/pkg/uio"
 )
 

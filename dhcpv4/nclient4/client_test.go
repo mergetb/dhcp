@@ -16,8 +16,8 @@ import (
 	"time"
 
 	"github.com/hugelgupf/socketpair"
-	"github.com/insomniacslk/dhcp/dhcpv4"
-	"github.com/insomniacslk/dhcp/dhcpv4/server4"
+	"github.com/mergetb/dhcp/dhcpv4"
+	"github.com/mergetb/dhcp/dhcpv4/server4"
 )
 
 type handler struct {

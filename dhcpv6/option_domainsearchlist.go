@@ -3,7 +3,7 @@ package dhcpv6
 import (
 	"fmt"
 
-	"github.com/insomniacslk/dhcp/rfc1035label"
+	"github.com/mergetb/dhcp/rfc1035label"
 )
 
 // OptDomainSearchList list implements a OptionDomainSearchList option

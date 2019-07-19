@@ -9,8 +9,8 @@ import (
 	"time"
 
 	promise "github.com/fanliao/go-promise"
-	"github.com/insomniacslk/dhcp/dhcpv6"
-	"github.com/insomniacslk/dhcp/dhcpv6/client6"
+	"github.com/mergetb/dhcp/dhcpv6"
+	"github.com/mergetb/dhcp/dhcpv6/client6"
 )
 
 // Client implements an asynchronous DHCPv6 client

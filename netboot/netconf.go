@@ -10,8 +10,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/insomniacslk/dhcp/dhcpv4"
-	"github.com/insomniacslk/dhcp/dhcpv6"
+	"github.com/mergetb/dhcp/dhcpv4"
+	"github.com/mergetb/dhcp/dhcpv6"
 	"github.com/jsimonetti/rtnetlink"
 	"github.com/jsimonetti/rtnetlink/rtnl"
 	"github.com/mdlayher/netlink"

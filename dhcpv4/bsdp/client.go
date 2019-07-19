@@ -3,8 +3,8 @@ package bsdp
 import (
 	"errors"
 
-	"github.com/insomniacslk/dhcp/dhcpv4"
-	"github.com/insomniacslk/dhcp/dhcpv4/client4"
+	"github.com/mergetb/dhcp/dhcpv4"
+	"github.com/mergetb/dhcp/dhcpv4/client4"
 )
 
 // Client represents a BSDP client that can perform BSDP exchanges via the

@@ -4,8 +4,8 @@ import (
 	"log"
 	"net"
 
-	"github.com/insomniacslk/dhcp/iana"
-	"github.com/insomniacslk/dhcp/rfc1035label"
+	"github.com/mergetb/dhcp/iana"
+	"github.com/mergetb/dhcp/rfc1035label"
 )
 
 // WithClientID adds a client ID option to a DHCPv6 packet

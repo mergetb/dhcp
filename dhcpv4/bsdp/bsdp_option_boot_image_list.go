@@ -3,7 +3,7 @@ package bsdp
 import (
 	"strings"
 
-	"github.com/insomniacslk/dhcp/dhcpv4"
+	"github.com/mergetb/dhcp/dhcpv4"
 	"github.com/u-root/u-root/pkg/uio"
 )
 

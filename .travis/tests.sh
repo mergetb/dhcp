@@ -28,7 +28,7 @@ for d in $(go list ./... | grep -v vendor); do
 done
 
 # check that we are not breaking some projects that depend on us. Remove this after moving to
-# Go versioned modules, see https://github.com/insomniacslk/dhcp/issues/123
+# Go versioned modules, see https://github.com/mergetb/dhcp/issues/123
 
 # Skip go1.9 for this check. rtr7/router7 depends on miekg/dns, which does not
 # support go1.9
